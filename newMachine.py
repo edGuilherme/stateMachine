@@ -2,20 +2,16 @@ from statemachine import StateMachine, State
 
 
 class Mundo(StateMachine):
-
-    vida = 10
     fome = 0
-    dorme = State(initial=True)
+    vida = 10
+    brigar = 1
+    dormindo = State(initial=True)
     come = State()
     luta = State()
 
-    dormindo = dorme.to(come)
-    comendo = come.to(dorme)
-    lutando = luta.to(dorme)
-
     cycle = (
-            dormindo
-            | comendo | lutando
+            dormindo.to(come)
+            | come.to(dormindo) | come.to(luta) | dormindo.to(luta)
 
     )
 
@@ -23,31 +19,59 @@ class Mundo(StateMachine):
         message = ". " + message if message else ""
         return f"Running {event} from {source.id} to {target.id}{message}"
 
-    def on_enter_dorme(self):
-        self.fome += 1
-        print("O troll está dormindo" )
+    def on_enter_dormindo(self):
+        self.estado = 1
+        print("O troll está dormindo")
 
-    def on_exit_dorme(self):
+    def on_exit_dormindo(self):
         pass
 
     def on_enter_come(self):
-        self.fome -= 3
-        print("O troll está comendo" )
+        self.estado = 2;
+        print("O troll está na floresta comendo")
 
     def on_enter_luta(self):
-        print("O troll está lutando" )
+        self.estado = 3;
+        print("O troll começou a lutar")
+
+    def atualiza(self):
+        if self.estado == 1:  # dormindo
+            self.fome += 1
+            print("é esse " + str(self.fome))
+            if self.vida < 10:
+                self.vida += 1
+            if self.fome >= 4:  # faminto - vai comer
+                self.cycle()
+
+
+        elif self.estado == 2:  # comendo - na floresta
+            self.fome -= 3
+            self.vida -= 1
+            self.brigar -= 1
+            print(self.brigar)
+
+            if self.brigar <= 0:
+                self.cycle("luta")
+
+    def batalha(self):
+        print("Em batalha")
 
 
 sm = Mundo()
-sm.cycle
-sm.cycle
-
-
-
-
-
-
-
+sm.atualiza()
+sm.atualiza()
+sm.atualiza()
+print(sm.current_state.name)
+sm.atualiza()
+print(sm.current_state.name)
+sm.atualiza()
+print(sm.current_state.name)
+sm.cycle()
+print("é esse " + str(sm.current_state.name))
+sm.cycle()
+print(sm.current_state.name)
+sm.cycle()
+print(sm.current_state.name)
 
 
 
