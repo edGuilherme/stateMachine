@@ -38,7 +38,7 @@ class Mundo(StateMachine):
 
     def on_enter_dorme(self):
         print("O troll está dormindo")
-        self.fome += 1
+        self.fome += 1  # incremento da fome a cada ciclo
         print("O troll está com " + str(self.fome) + " " + "de fome.")
         if self.vida < 10:
             self.vida += 1
@@ -50,7 +50,7 @@ class Mundo(StateMachine):
         pass
 
     def on_enter_come(self):  # comendo - na floresta
-        self.fome += 1
+        self.fome += 1  # incremento da fome a cada ciclo
         print("O troll está na floresta comendo \\ -3 de fome \\ +1 em briga (probabilidade de encontrar inimigo)")
         if self.fome >= 0:  # tentativa de impedir que a var. fome não seja negativa - não funcionou tão bem
             self.fome -= 3
@@ -62,11 +62,12 @@ class Mundo(StateMachine):
             self.cycle5()  # come para luta
 
     def on_enter_luta(self):
-        self.fome += 1
+        self.fome += 1  # incremento da fome a cada ciclo
         print("O troll começou a lutar")
         self.ataqueTroll = random.randint(2, 4)
         self.ataqueInimigo = random.randint(1, 2)
         self.vidaInimigo = random.randint(1, 4)
+        print("~~~~STATUS DA BATALHA~~~~")
         print("Vida troll: " + str(self.vida))
         print("Vida inimigo: " + str(self.vidaInimigo))
         print("Ataque troll: " + str(self.ataqueTroll))
@@ -83,11 +84,17 @@ class Mundo(StateMachine):
                     self.cycle6()
             if self.turno == 2:
                 print("Inimigo ataca")
-                self.vida -= self.vidaInimigo
+                self.vida -= self.ataqueInimigo
                 if self.vida <= 0:
                     print("Morreu")
                     emBatalha = False
                     self.cycle7()
+
+    def on_exit_luta(self):
+        print("~~~~FIM DA BATALHA~~~~")
+
+    def on_enter_perdendo(self):
+        pass
 
 
 sm = Mundo()  # começa o mundo - dormindo
