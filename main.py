@@ -2,67 +2,63 @@ from statemachine import StateMachine, State
 
 
 class Mundo(StateMachine):
-
     fome = 0
     vida = 10
-    dormindo = State(initial=True)
+
+    dorme = State(initial=True)
     come = State()
     luta = State()
 
+    dormindo = dorme.to(dorme) # inicial
+    faminto = dorme.to(come)
+    comendo = come.to(come)
+    lutando = come.to(luta)
+    ganhando = luta.to(dorme)
 
     cycle = (
-            dormindo.to(come)
-            | come.to(dormindo) | come.to(luta) | dormindo.to(luta)
-
+            faminto
     )
 
+    cycle2 = (
+            comendo
+    )
+
+    cycle3 = (
+        lutando
+    )
 
     def before_cycle(self, event: str, source: State, target: State, message: str = ""):
         message = ". " + message if message else ""
         return f"Running {event} from {source.id} to {target.id}{message}"
 
-    def on_enter_dormindo(self):
-        self.estado = 1
+    def on_enter_dorme(self):
+        self.fome += 1
+        print("é esse " + str(self.fome))
+        if self.vida < 10:
+            self.vida += 1
+        if self.fome >= 4:  # faminto - vai comer
+            self.cycle() # não funciona
         print("O troll está dormindo")
 
-    def on_exit_dormindo(self):
+    def on_exit_dorme(self):
         pass
 
-    def on_enter_come(self):
-        self.estado = 2;
+    def on_enter_come(self):  # comendo - na floresta
+        self.fome -= 3
+        self.vida -= 1
         print("O troll está na floresta comendo")
 
     def on_enter_luta(self):
-        self.estado = 3;
         print("O troll começou a lutar")
-
-
-    def atualiza(self):
-        if self.estado == 1: #dormindo
-            self.fome +=1
-            if self.vida < 10:
-                self.vida +=1
-            if self.fome >= 4: #faminto - vai comer
-                self.cycle()
-
-        elif self.estado == 2: #comendo - na floresta
-            self.fome -=3
-            self.vida -=1
-            if self.fome < 4: #fome diminui - vai dormir
-                self.cycle()
-
-    def batalha(self):
-        self.cycle
 
 
 
 sm = Mundo()
-sm.atualiza()
-sm.atualiza()
-sm.atualiza()
-sm.atualiza()
-sm.atualiza()
-sm.batalha()
+sm.cycle()
+print(sm.current_state.id)
+sm.cycle3()
+print(sm.current_state.id)
+
 
 
 
